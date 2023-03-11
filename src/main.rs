@@ -6,6 +6,8 @@ use std::{
 
 use std::io::{Read, Write};
 
+use termion::event::Key;
+use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -18,9 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let branches = branches();
     let selected = 0;
 
-    loop {
-        let mut buf = String::new();
-        stdin.read_to_string(&mut buf).unwrap();
+    for c in stdin.keys() {
         write!(stdout, "{}", termion::clear::All)?;
         for branch in branches.iter().enumerate() {
             if selected == branch.0 {
@@ -29,8 +29,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 writeln!(stdout, "  {}\r", branch.1)?;
             }
         }
-        match buf.as_str() {
-            "q" => break,
+        match c? {
+            Key::Esc => break,
             c => {
                 write!(stdout, "{:?}", c)?;
             }
