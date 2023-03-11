@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let stdin = stdin.lock();
 
     let branches = branches();
-    let selected = 0;
+    let mut selected = 0;
 
     let mut keys = stdin.keys();
     loop {
@@ -32,6 +32,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         match keys.next().unwrap()? {
             Key::Esc | Key::Char('q') | Key::Ctrl('c') => break,
+            Key::Up => {
+                if selected > 0 {
+                    selected -= 1;
+                }
+            }
+            Key::Down => {
+                if selected < branches.len() - 1 {
+                    selected += 1;
+                }
+            }
             c => {
                 write!(stdout, "{:?}", c)?;
             }
