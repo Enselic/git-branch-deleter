@@ -18,9 +18,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let branches = branches();
     let selected = 0;
 
-    let mut bytes = stdin.bytes();
     loop {
-        let c = bytes.next().unwrap()?;
+        let mut buf = String::new();
+        stdin.read_to_string(&mut buf).unwrap();
         write!(stdout, "{}", termion::clear::All)?;
         for branch in branches.iter().enumerate() {
             if selected == branch.0 {
@@ -29,8 +29,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 writeln!(stdout, "  {}\r", branch.1)?;
             }
         }
-        match c {
-            b'q' => break,
+        match buf.as_str() {
+            "q" => break,
             c => {
                 write!(stdout, "{:?}", c)?;
             }
