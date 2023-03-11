@@ -20,9 +20,7 @@ fn main() -> std::io::Result<()> {
     let mut bytes = stdin.bytes();
     loop {
         let c = bytes.next().unwrap().unwrap();
-        
         write!(stdout, "{}", termion::clear::All)?;
-
         for branch in branches.iter().enumerate() {
             if selected == branch.0 {
                 writeln!(stdout, "* {}\r", branch.1)?;
@@ -30,12 +28,15 @@ fn main() -> std::io::Result<()> {
                 writeln!(stdout, "  {}\r", branch.1)?;
             }
         }
+        match c {
+            b'q' => break,
+            _ => {}
+        }
 
         stdout.flush().unwrap();
-        let mut buf = String::new();
-        let input = std::io::stdin().read_line(&mut buf).unwrap();
-        eprintln!("input: {}", input);
     }
+
+    Ok(())
 }
 
 fn branches() -> Vec<String> {
