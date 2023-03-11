@@ -50,7 +50,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             Key::Delete => {
                 let branch = &branches[selected];
                 let stdout = Command::new("git")
-                    .args(["branch", "-D", branch])
+                    .args(["branch", "-D"])
+                    .arg(branch.trim())
                     .spawn()
                     .unwrap()
                     .wait();
