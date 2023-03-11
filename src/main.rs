@@ -20,17 +20,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let branches = branches();
     let selected = 0;
 
-    for c in stdin.keys() {
+    let mut keys = stdin.keys();
+    loop {
         write!(stdout, "{}", termion::clear::All)?;
-        for branch in branches.iter().enumerate() {
-            if selected == branch.0 {
-                writeln!(stdout, "* {}\r", branch.1)?;
+        for (index, branch) in branches.iter().enumerate() {
+            if selected == index {
+                writeln!(stdout, "* {branch}\r")?;
             } else {
-                writeln!(stdout, "  {}\r", branch.1)?;
+                writeln!(stdout, "  {branch}\r")?;
             }
         }
-        match c? {
-            Key::Char('q') | Key::Esc | Key::Ctrl('c') => break,
+        match keys.next().unwrap()? {
+            Key::Esc | Key::Char('q') | Key::Ctrl('c') => break,
             c => {
                 write!(stdout, "{:?}", c)?;
             }
