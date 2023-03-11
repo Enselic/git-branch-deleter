@@ -1,4 +1,5 @@
 use std::{
+    error::Error,
     io::{stdin, stdout},
     process::Command,
 };
@@ -7,7 +8,7 @@ use std::io::{Read, Write};
 
 use termion::raw::IntoRawMode;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     // Initialize 'em all.
     let stdout = stdout();
     let mut stdout = stdout.lock().into_raw_mode().unwrap();
@@ -19,7 +20,7 @@ fn main() -> std::io::Result<()> {
 
     let mut bytes = stdin.bytes();
     loop {
-        let c = bytes.next().unwrap().unwrap();
+        let c = bytes.next().unwrap()?;
         write!(stdout, "{}", termion::clear::All)?;
         for branch in branches.iter().enumerate() {
             if selected == branch.0 {
@@ -30,7 +31,9 @@ fn main() -> std::io::Result<()> {
         }
         match c {
             b'q' => break,
-            _ => {}
+            c => {
+                write!(stdout, "{:?}", c)?;
+            }
         }
 
         stdout.flush().unwrap();
