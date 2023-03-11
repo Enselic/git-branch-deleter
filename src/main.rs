@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
         match c? {
-            Key::Esc => break,
+            Key::Char('q') | Key::Esc | Key::Ctrl('c') => break,
             c => {
                 write!(stdout, "{:?}", c)?;
             }
