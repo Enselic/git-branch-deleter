@@ -13,15 +13,17 @@ use termion::raw::IntoRawMode;
 struct BranchInfo {
     name: String,
     current: bool,
+    status: &'static str,
     error: Option<String>,
 }
 
 impl BranchInfo {
     fn parse(line: impl AsRef<str>) -> Self {
-        let current = line.starts_with("*");
+        let current = line.as_ref().starts_with("*");
         Self {
-            name: line.split_at(2).1.to_owned(),
+            name: line.as_ref().split_at(2).1.to_owned(),
             current,
+            status: "",
             error: None,
         }
     }
@@ -65,7 +67,18 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             Key::Delete => {
-                let branch = &branches[selected];
+                let branch = &mut branches[selected];
+                match delete_branch(&branch.name) {
+                    Ok(_) => {
+                        branch.branches.remove(selected);
+                        if selected > 0 {
+                            selected -= 1;
+                        }
+                    }
+                    Err(e) => {
+                        writeln!(stdout, "Error: {}", e)?;
+                    }
+                }
                 let stdout = Command::new("git")
                     .args(["branch", "-D"])
                     .arg(branch.trim())
