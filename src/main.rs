@@ -22,7 +22,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut keys = stdin.keys();
     loop {
-        write!(stdout, "{}", termion::clear::All)?;
+        write!(
+            stdout,
+            "{}{}",
+            termion::clear::All,
+            termion::cursor::Goto::default()
+        )?;
         for (index, branch) in branches.iter().enumerate() {
             if selected == index {
                 writeln!(stdout, "* {branch}\r")?;
