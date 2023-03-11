@@ -65,10 +65,10 @@ fn branches() -> Vec<String> {
         .unwrap()
         .stdout;
 
-    let stdout: String = String::from_utf8_lossy(&stdout)
-        .replace("*", " ")
-        .trim()
-        .to_owned();
+    let stdout: String = String::from_utf8_lossy(&stdout).into_owned();
+    //        .replace("*", " ")
+    //        .trim()
+    //        .to_owned();
 
     stdout.lines().map(String::from).collect()
 }
