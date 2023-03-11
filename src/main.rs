@@ -47,6 +47,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                     selected += 1;
                 }
             }
+            Key::Delete => {
+                let branch = &branches[selected];
+                let stdout = Command::new("git")
+                    .args(["branch", "-D", branch])
+                    .spawn()
+                    .unwrap()
+                    .wait();
+                //let stdout: String = String::from_utf8_lossy(&stdout).into_owned();
+                //writeln!(stdout, "{}", stdout)?;
+            }
             c => {
                 write!(stdout, "{:?}", c)?;
             }
