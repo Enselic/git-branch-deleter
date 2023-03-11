@@ -3,7 +3,7 @@ use std::{
     process::Command,
 };
 
-use std::io::Write;
+use std::io::{Read, Write};
 
 use termion::raw::IntoRawMode;
 
@@ -17,7 +17,10 @@ fn main() -> std::io::Result<()> {
     let branches = branches();
     let selected = 0;
 
+    let mut bytes = stdin.bytes();
     loop {
+        let c = bytes.next().unwrap().unwrap();
+        
         write!(stdout, "{}", termion::clear::All)?;
 
         for branch in branches.iter().enumerate() {
