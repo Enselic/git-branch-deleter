@@ -10,6 +10,23 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
+struct BranchInfo {
+    name: String,
+    current: bool,
+    error: Option<String>,
+}
+
+impl BranchInfo {
+    fn parse(line: impl AsRef<str>) -> Self {
+        let current = line.starts_with("*");
+        Self {
+            name: line.split_at(2).1.to_owned(),
+            current,
+            error: None,
+        }
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     // Initialize 'em all.
     let stdout = stdout();
@@ -17,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let stdin = stdin();
     let stdin = stdin.lock();
 
-    let branches = branches();
+    let branches: Vec<BranchInfo> = branches();
     let mut selected = 0;
 
     let mut keys = stdin.keys();
@@ -69,7 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn branches() -> Vec<String> {
+fn branches() -> Vec<BranchInfo> {
     let stdout = Command::new("git")
         .args(["branch", "--list", "--color=never"])
         .output()
@@ -77,9 +94,19 @@ fn branches() -> Vec<String> {
         .stdout;
 
     let stdout: String = String::from_utf8_lossy(&stdout).into_owned();
-    //        .replace("*", " ")
-    //        .trim()
-    //        .to_owned();
 
-    stdout.lines().map(String::from).collect()
+    stdout.lines().map(BranchInfo::parse).collect()
+}
+
+fn delete_branch(branch: &str) -> Result<(), String> {
+    let output = Command::new("git")
+        .args(["branch", "-D"])
+        .arg(branch.trim())
+        .output()
+        .unwrap();
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err(String::from_utf8_lossy(&output.stderr).into())
+    }
 }
