@@ -7,7 +7,7 @@ description = "Delete local git branches comfortably via a CLI"
 homepage = "https://github.com/Enselic/git-branch-deleter"
 documentation = "https://docs.rs/git-branch-deleter"
 readme = "README.md"
-categories = ["command-line-utilities", "development-tools", "version-control"]
+categories = ["command-line-utilities", "development-tools"]
 license = "MIT"
 repository = "https://github.com/Enselic/cargo-public-api"
 
