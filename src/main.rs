@@ -155,7 +155,7 @@ impl Branch {
     fn from_line(line: impl AsRef<str>) -> Self {
         let status = line
             .as_ref()
-            .starts_with("*")
+            .starts_with('*')
             .then(|| "(current branch)".to_owned())
             .unwrap_or_default();
 
@@ -178,7 +178,7 @@ impl Branch {
             &output.stderr
         })
         .into();
-        self.status = self.status.replace("\n", " ");
+        self.status = self.status.replace('\n', " ");
     }
 }
 
