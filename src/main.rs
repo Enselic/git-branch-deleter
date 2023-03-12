@@ -178,6 +178,7 @@ impl Branch {
             &output.stderr
         })
         .into();
+        self.status = self.status.replace("\n", " ");
     }
 }
 
