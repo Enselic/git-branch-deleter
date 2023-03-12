@@ -47,9 +47,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         for (index, branch) in branches.clone().iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
-            write!(stdout, "{prefix} ")?;
 
-            write!(stdout, "{}", branch.name)?;
+            write!(stdout, "{prefix}{}", branch.name)?;
 
             let padding_len = max_name_len - branch.name.len();
             for _ in 0..padding_len {
