@@ -11,10 +11,6 @@ RUSTDOCFLAGS='--deny warnings' cargo doc --locked --no-deps --document-private-i
 
 scripts/cargo-clippy.sh
 
-cargo build --locked --no-default-features # Build without "diff-latest" feature
-
-cargo build --locked # Build with default features
-
 cargo test --locked
 
 if command -v cargo-audit >/dev/null; then
