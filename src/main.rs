@@ -60,11 +60,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             termion::cursor::Goto::default()
         )?;
         for (index, branch) in branches.iter().enumerate() {
-            if selected == index {
-                writeln!(stdout, "* {branch}\r")?;
-            } else {
-                writeln!(stdout, "  {branch}\r")?;
-            }
+            let prefix = if selected == index { "-> " } else { "   " };
+            writeln!(stdout, "{prefix} {branch}\r")?;
         }
         match keys.next().unwrap()? {
             Key::Esc | Key::Char('q') | Key::Ctrl('c') => break,
