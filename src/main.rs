@@ -37,6 +37,9 @@ struct Selection {
     max: usize,
 }
 
+/// To line things up nicely
+const MARGIN: &str = "   ";
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut keys = stdin().lock().keys();
     let mut stdout = stdout().lock().into_raw_mode()?;
@@ -79,7 +82,7 @@ fn print_branches<'a>(
     for (index, branch) in branches.into_iter().enumerate() {
         writeln!(
             stdout,
-            "{}{}{}{}{}\r",
+            "{}{}{}{MARGIN}{}{}\r",
             if selected == index { "-> " } else { "   " },
             branch.name,
             " ".repeat(max_branch_name_len - branch.name.len()),
@@ -96,18 +99,19 @@ fn print_help(
     indentation: usize,
     branch: &mut Branch,
 ) -> std::io::Result<()> {
-    let indentation = " ".repeat(indentation as usize);
+    let command_len = 1; // 'd', 'D' or 'q'
+    let pad = " ".repeat(indentation - command_len);
     let branch_name = branch.name.as_str();
 
     writeln!(stdout, "\r")?;
     writeln!(stdout, "\r")?;
     writeln!(stdout, "COMMANDS\r")?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "    d{indentation}   git branch -d {branch_name}\r",)?;
+    writeln!(stdout, "   d{pad}{MARGIN}git branch -d {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "    D{indentation}   git branch -D {branch_name}\r",)?;
+    writeln!(stdout, "   D{pad}{MARGIN}git branch -D {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "    q{indentation}   quit\r")?;
+    writeln!(stdout, "   q{pad}{MARGIN}quit\r")?;
     writeln!(stdout, "\r")?;
 
     Ok(())
