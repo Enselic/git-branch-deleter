@@ -11,7 +11,7 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 /// Info about a git branch
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 struct Branch {
     /// Name of the git branch
     name: String,
@@ -21,6 +21,7 @@ struct Branch {
 }
 
 /// Keyboard input is mapped to one of these actions
+#[derive(Debug)]
 enum Action {
     Delete,
     ForceDelete,
@@ -30,42 +31,36 @@ enum Action {
     None,
 }
 
+#[derive(Debug)]
+struct Selection {
+    index: usize,
+    max: usize,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut keys = stdin().lock().keys();
     let mut stdout = stdout().lock().into_raw_mode()?;
-    let (mut branches, max_branch_name_len) = get_local_branches();
+    let (mut branches, max_branch_name_len) = local_git_branches();
 
-    // Clear the screen once to avoid flicker
+    // Clear the screen only once to avoid flicker
     write!(stdout, "{}", termion::clear::All)?;
 
-    let mut selected = 0;
+    let mut selection = Selection::new(max_branch_name_len);
     loop {
-        let selected_branch = branches.get_mut(selected).unwrap();
+        let selected_branch = branches.get_mut(selection.index).unwrap();
         let branch_name = selected_branch.name.clone();
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
-        print_branches(stdout, branches, selected, max_branch_name_len)?;
+        print_branches(stdout, branches, selection.index, max_branch_name_len)?;
         print_help(&mut stdout, max_branch_name_len, &branch_name)?;
         stdout.flush().unwrap();
 
         match key_to_action(keys.next().unwrap()?) {
+            Action::MoveUp => selection.move_up(),
+            Action::MoveDown => selection.move_down(),
+            Action::Delete => selected_branch.delete("-d"),
+            Action::ForceDelete => selected_branch.delete("-D"),
             Action::Quit => break,
-            Action::MoveUp => {
-                if selected > 0 {
-                    selected -= 1;
-                }
-            }
-            Action::MoveDown => {
-                if selected < branches.len() - 1 {
-                    selected += 1;
-                }
-            }
-            Action::Delete => {
-                selected_branch.delete("-d");
-            }
-            Action::ForceDelete => {
-                selected_branch.delete("-D");
-            }
             _ => {}
         }
     }
@@ -75,13 +70,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn print_branches<'a>(
     mut stdout: impl std::io::Write,
-    branches: impl Iterator<Item = &'a Branch>,
+    branches: impl IntoIterator<Item = &'a Branch>,
     selected: usize,
     max_branch_name_len: usize,
 ) -> std::io::Result<()> {
     writeln!(stdout, "BRANCHES\r")?;
     writeln!(stdout, "\r")?;
-    for (index, branch) in branches.enumerate() {
+    for (index, branch) in branches.into_iter().enumerate() {
         let prefix = if selected == index { "-> " } else { "   " };
 
         write!(stdout, "{prefix}{}", branch.name)?;
@@ -117,37 +112,7 @@ fn print_help(
     Ok(())
 }
 
-impl Branch {
-    fn from_line(line: impl AsRef<str>) -> Self {
-        let status = line
-            .as_ref()
-            .starts_with("*")
-            .then(|| "(current branch)".to_owned())
-            .unwrap_or_default();
-
-        Self {
-            name: line.as_ref().split_at(2).1.to_owned(),
-            status,
-        }
-    }
-
-    fn delete(&mut self, delete_arg: &str) {
-        let output = Command::new("git")
-            .arg("branch")
-            .arg(delete_arg)
-            .arg(self.name.as_str())
-            .output()
-            .unwrap();
-        self.status = String::from_utf8_lossy(if output.status.success() {
-            &output.stdout
-        } else {
-            &output.stderr
-        })
-        .into();
-    }
-}
-
-fn get_local_branches() -> (Vec<Branch>, usize) {
+fn local_git_branches() -> (Vec<Branch>, usize) {
     let stdout = Command::new("git")
         .args(["branch", "--list", "--color=never"])
         .env("HOME", "/no-config")
@@ -178,5 +143,53 @@ fn key_to_action(key: Key) -> Action {
         Key::Delete | Key::Char('d') => Action::Delete,
         Key::Char('D') => Action::ForceDelete,
         _ => Action::None,
+    }
+}
+
+impl Branch {
+    fn from_line(line: impl AsRef<str>) -> Self {
+        let status = line
+            .as_ref()
+            .starts_with("*")
+            .then(|| "(current branch)".to_owned())
+            .unwrap_or_default();
+
+        Self {
+            name: line.as_ref().split_at(2).1.to_owned(),
+            status,
+        }
+    }
+
+    fn delete(&mut self, delete_arg: &str) {
+        let output = Command::new("git")
+            .arg("branch")
+            .arg(delete_arg)
+            .arg(self.name.as_str())
+            .output()
+            .unwrap();
+        self.status = String::from_utf8_lossy(if output.status.success() {
+            &output.stdout
+        } else {
+            &output.stderr
+        })
+        .into();
+    }
+}
+
+impl Selection {
+    fn new(max: usize) -> Self {
+        Self { index: 0, max }
+    }
+
+    fn move_up(&mut self) {
+        if self.index > 0 {
+            self.index -= 1;
+        }
+    }
+
+    fn move_down(&mut self) {
+        if self.index < self.max {
+            self.index += 1;
+        }
     }
 }
