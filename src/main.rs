@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout().lock().into_raw_mode().unwrap();
     let mut keys = stdin().lock().keys();
     let mut branches: Vec<Branch> = get_local_branches();
-    let max_name_len = branches
+    let longest_branch_name_len = branches
         .iter()
         .map(|branch| branch.name.len())
         .max()
@@ -44,13 +44,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         writeln!(stdout, "BRANCHES\r")?;
         writeln!(stdout, "\r")?;
-
-        for (index, branch) in branches.clone().iter().enumerate() {
+        for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
 
             write!(stdout, "{prefix}{}", branch.name)?;
 
-            let padding_len = max_name_len - branch.name.len();
+            let padding_len = longest_branch_name_len - branch.name.len();
             for _ in 0..padding_len {
                 write!(stdout, "     {}", branch.status)?;
             }
@@ -61,19 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let selected_branch = branches.get_mut(selected).unwrap();
         let branch_name = selected_branch.name.clone();
 
-        let mut s = String::new();
-        for _ in 0..max_name_len {
-            s.push(' ');
-        }
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "COMMANDS\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "    d{s}   git branch -d {branch_name}\r")?;
-        writeln!(stdout, "    D{s}   git branch -D {branch_name}\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "    q{s}   Quit app\r")?;
-        writeln!(stdout, "\r")?;
+        print_help(&mut stdout, longest_branch_name_len, &branch_name)?;
 
         stdout.flush().unwrap();
 
@@ -99,6 +86,25 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => {}
         }
     }
+
+    Ok(())
+}
+
+fn print_help(
+    mut stdout: impl std::io::Write,
+    indentation: usize,
+    branch_name: &str,
+) -> std::io::Result<()> {
+    let indentation = " ".repeat(indentation as usize);
+    writeln!(stdout, "\r")?;
+    writeln!(stdout, "\r")?;
+    writeln!(stdout, "COMMANDS\r")?;
+    writeln!(stdout, "\r")?;
+    writeln!(stdout, "    d{indentation}   git branch -d {branch_name}\r")?;
+    writeln!(stdout, "    D{indentation}   git branch -D {branch_name}\r")?;
+    writeln!(stdout, "\r")?;
+    writeln!(stdout, "    q{indentation}   Quit app\r")?;
+    writeln!(stdout, "\r")?;
 
     Ok(())
 }
