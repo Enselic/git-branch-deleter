@@ -30,10 +30,12 @@ impl BranchInfo {
 
 impl Display for BranchInfo {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", if self.current { "* " } else { "  " })?;
         write!(f, "{}", self.name)?;
         if let Some(status) = &self.status {
             write!(f, " {status}")?;
+        }
+        if self.current {
+            write!(f, " (current branch)")?;
         }
         Ok(())
     }
@@ -59,11 +61,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
-        writeln!(stdout, "Press\r")?;
+        writeln!(stdout, "Commands:\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "  'q' to quit\r")?;
-        writeln!(stdout, "  'd' to 'git branch -d\r")?;
-        writeln!(stdout, "  'D' to 'git branch -D\r")?;
+        writeln!(stdout, "  q    Quits\r")?;
+        writeln!(stdout, "  d    git branch -d\r")?;
+        writeln!(stdout, "  D    git branch -D\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "Branches:\r")?;
         writeln!(stdout, "\r")?;
 
         for (index, branch) in branches.iter().enumerate() {
