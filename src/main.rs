@@ -74,6 +74,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
+        writeln!(stdout, "                                LOCAL GIT BRANCHES\r")?;
+        writeln!(stdout, "================================================================================\r")?;
+        writeln!(stdout, "\r")?;
+
         for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
             writeln!(stdout, "{prefix} {branch}{}\r", termion::clear::AfterCursor)?;
@@ -83,8 +87,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         writeln!(stdout, "\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "Select branch and action:\r")?;
+        writeln!(stdout, "                                    COMMANDS\r")?;
+        writeln!(stdout, "================================================================================\r")?;
         writeln!(stdout, "\r")?;
         writeln!(stdout, "  d    git branch -d {branch_name}\r")?;
         writeln!(stdout, "  D    git branch -D {branch_name}\r")?;
