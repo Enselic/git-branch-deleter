@@ -26,20 +26,13 @@ enum Action {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut stdout = stdout().lock().into_raw_mode().unwrap();
     let mut keys = stdin().lock().keys();
-    let mut branches: Vec<Branch> = get_local_branches();
-    let longest_branch_name_len = branches
-        .iter()
-        .map(|branch| branch.name.len())
-        .max()
-        .unwrap_or(0);
-
-    // Clear the screen once to avoid flicker
-    write!(stdout, "{}{}", termion::clear::All, termion::cursor::Hide)?;
+    let mut stdout = stdout().lock().into_raw_mode().unwrap();
+    let (mut branches, max_branch_name_len) = get_local_branches();
 
     let mut selected = 0;
     loop {
+        write!(stdout, "{}", termion::clear::All)?;
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
         writeln!(stdout, "BRANCHES\r")?;
@@ -49,7 +42,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             write!(stdout, "{prefix}{}", branch.name)?;
 
-            let padding_len = longest_branch_name_len - branch.name.len();
+            let padding_len = max_branch_name_len - branch.name.len();
             for _ in 0..padding_len {
                 write!(stdout, "     {}", branch.status)?;
             }
@@ -60,8 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let selected_branch = branches.get_mut(selected).unwrap();
         let branch_name = selected_branch.name.clone();
 
-        print_help(&mut stdout, longest_branch_name_len, &branch_name)?;
-
+        print_help(&mut stdout, max_branch_name_len, &branch_name)?;
         stdout.flush().unwrap();
 
         let action = key_to_action(keys.next().unwrap()?);
@@ -140,32 +132,34 @@ impl Branch {
     }
 }
 
-fn get_local_branches() -> Vec<Branch> {
+fn get_local_branches() -> (Vec<Branch>, usize) {
     let stdout = Command::new("git")
         .args(["branch", "--list", "--color=never"])
+        .env("HOME", "/no-config")
+        .env("XDG_CONFIG_HOME", "/no-config")
         .env("GIT_CONFIG_NOSYSTEM", "1")
-        .env(
-            "HOME",
-            "/this-dir-does-not-exist-to-avoid-reading-git-config",
-        )
-        .env(
-            "XDG_CONFIG_HOME",
-            "/this-dir-does-not-exist-to-avoid-reading-git-config",
-        )
         .output()
         .unwrap()
         .stdout;
 
     let stdout: String = String::from_utf8_lossy(&stdout).into_owned();
 
-    stdout.lines().map(Branch::from_line).collect()
+    let branches: Vec<Branch> = stdout.lines().map(Branch::from_line).collect();
+
+    let max_branch_name_len = branches
+        .iter()
+        .map(|branch| branch.name.len())
+        .max()
+        .unwrap_or(0);
+
+    (branches, max_branch_name_len)
 }
 
 fn key_to_action(key: Key) -> Action {
     match key {
-        Key::Esc | Key::Char('q') | Key::Ctrl('c') => Action::Quit,
-        Key::Up | Key::Ctrl('p') | Key::Char('k') => Action::MoveUp,
         Key::Down | Key::Ctrl('n') | Key::Char('j') => Action::MoveDown,
+        Key::Up | Key::Ctrl('p') | Key::Char('k') => Action::MoveUp,
+        Key::Esc | Key::Char('q') | Key::Ctrl('c') => Action::Quit,
         Key::Delete | Key::Char('d') => Action::Delete,
         Key::Char('D') => Action::ForceDelete,
         _ => Action::None,
