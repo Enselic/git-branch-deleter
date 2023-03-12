@@ -101,6 +101,7 @@ fn print_help(
     writeln!(stdout, "COMMANDS\r")?;
     writeln!(stdout, "\r")?;
     writeln!(stdout, "    d{indentation}   git branch -d {branch_name}\r")?;
+    writeln!(stdout, "\r")?;
     writeln!(stdout, "    D{indentation}   git branch -D {branch_name}\r")?;
     writeln!(stdout, "\r")?;
     writeln!(stdout, "    q{indentation}   Quit app\r")?;
