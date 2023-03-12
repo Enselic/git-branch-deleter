@@ -50,19 +50,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut selected = 0;
 
     let mut keys = stdin.keys();
+
+    // Only clear the screen once to avoid flicker
+    write!(stdout, "{}", termion::clear::All,)?;
+
     loop {
         let mut delete_request = None;
 
-        write!(
-            stdout,
-            "{}{}",
-            termion::clear::All,
-            termion::cursor::Goto::default()
-        )?;
+        write!(stdout, "{}", termion::cursor::Goto::default())?;
+
         for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
-            writeln!(stdout, "{prefix} {branch}\r")?;
+            writeln!(stdout, "{prefix} {branch}{}\r", termion::clear::AfterCursor)?;
         }
+
         match keys.next().unwrap()? {
             Key::Esc | Key::Char('q') | Key::Ctrl('c') => break,
             Key::Up => {
@@ -90,6 +91,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             let branch = &mut branches[selected];
             branch.status = Some(delete_branch(&branch.name, delete_request));
         }
+
+        write!(stdout, "Commands that affect the selected branch:\r")?;
+        write!(stdout, "\r")?;
+        write!(stdout, "  'd' performs 'git branch -d\r")?;
+        write!(stdout, "  'D' performs 'git branch -D\r")?;
+        write!(stdout, "\r")?;
+
+        write!(stdout, "Global commands:\r")?;
+        write!(stdout, "\r")?;
+        write!(stdout, "  'q' quits\r")?;
+        write!(stdout, "\r")?;
 
         stdout.flush().unwrap();
     }
