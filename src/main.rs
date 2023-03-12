@@ -59,21 +59,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
+        writeln!(stdout, "Press\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  'q' to quit\r")?;
+        writeln!(stdout, "  'd' to 'git branch -d\r")?;
+        writeln!(stdout, "  'D' to 'git branch -D\r")?;
+        writeln!(stdout, "\r")?;
+
         for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
             writeln!(stdout, "{prefix} {branch}{}\r", termion::clear::AfterCursor)?;
         }
-
-        writeln!(stdout, "Commands that affect the selected branch:\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "  'd' performs 'git branch -d\r")?;
-        writeln!(stdout, "  'D' performs 'git branch -D\r")?;
-        writeln!(stdout, "\r")?;
-
-        writeln!(stdout, "Global commands:\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "  'q' quits\r")?;
-        writeln!(stdout, "\r")?;
 
         stdout.flush().unwrap();
 
