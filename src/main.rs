@@ -70,17 +70,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             let prefix = if selected == index { "-> " } else { "   " };
             write!(stdout, "{prefix} ")?;
 
+            write!(stdout, "{}", branch.name)?;
+
             let padding_len = max_name_len - branch.name.len();
             for _ in 0..padding_len {
                 write!(stdout, " ")?;
             }
 
-            write!(stdout, "{}", branch.name)?;
             if let Some(status) = &branch.status {
                 write!(stdout, "    {status}")?;
             }
 
-            write!(stdout, "{} ", termion::clear::AfterCursor)?;
+            write!(stdout, "{}\n\r", termion::clear::AfterCursor)?;
         }
 
         let branch_name = branches[selected].name.clone();
