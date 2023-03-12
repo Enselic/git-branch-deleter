@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut keys = stdin.keys();
 
     // Only clear the screen once to avoid flicker
-    write!(stdout, "{}", termion::clear::All)?;
+    write!(stdout, "{}{}", termion::clear::All, termion::cursor::Hide)?;
 
     loop {
         let mut delete_request = None;
