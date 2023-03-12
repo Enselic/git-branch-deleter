@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let stdin = stdin();
     let stdin = stdin.lock();
 
-    let mut branches: Vec<BranchInfo> = branches();
+    let mut branches: Vec<BranchInfo> = get_local_branches();
     // let longest_branch_name = branches
     //     .iter()
     //     .map(|branch| branch.name.len())
@@ -124,9 +124,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn branches() -> Vec<BranchInfo> {
+fn get_local_branches() -> Vec<BranchInfo> {
     let stdout = Command::new("git")
         .args(["branch", "--list", "--color=never"])
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env(
+            "HOME",
+            "/this-dir-does-not-exist-to-avoid-reading-git-config",
+        )
+        .env(
+            "XDG_CONFIG_HOME",
+            "/this-dir-does-not-exist-to-avoid-reading-git-config",
+        )
         .output()
         .unwrap()
         .stdout;
