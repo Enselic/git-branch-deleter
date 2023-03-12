@@ -10,6 +10,7 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
+#[derive(Debug, Clone)]
 struct Branch {
     name: String,
     status: String,
@@ -25,30 +26,26 @@ enum Action {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut selected = 0;
-
     let mut stdout = stdout().lock().into_raw_mode().unwrap();
     let mut keys = stdin().lock().keys();
     let mut branches: Vec<Branch> = get_local_branches();
-
     let max_name_len = branches
         .iter()
         .map(|branch| branch.name.len())
         .max()
         .unwrap_or(0);
 
-    // Only clear the screen once to avoid flicker
+    // Clear the screen once to avoid flicker
     write!(stdout, "{}{}", termion::clear::All, termion::cursor::Hide)?;
 
+    let mut selected = 0;
     loop {
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
         writeln!(stdout, "BRANCHES\r")?;
         writeln!(stdout, "\r")?;
 
-        let selected_branch = branches.get_mut(selected).unwrap();
-
-        for (index, branch) in branches.iter().enumerate() {
+        for (index, branch) in branches.clone().iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
             write!(stdout, "{prefix} ")?;
 
@@ -56,12 +53,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let padding_len = max_name_len - branch.name.len();
             for _ in 0..padding_len {
-                write!(stdout, "     {}", selected_branch.status)?;
+                write!(stdout, "     {}", branch.status)?;
             }
 
             write!(stdout, "{}\n\r", termion::clear::AfterCursor)?;
         }
 
+        let selected_branch = branches.get_mut(selected).unwrap();
         let branch_name = selected_branch.name.clone();
 
         let mut s = String::new();
@@ -120,7 +118,7 @@ impl Branch {
         }
     }
 
-    fn delete_branch(&mut self, delete_arg: &str) {
+    fn delete(&mut self, delete_arg: &str) {
         let output = Command::new("git")
             .arg("branch")
             .arg(delete_arg)
