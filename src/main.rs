@@ -40,26 +40,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut selected = 0;
     loop {
-        write!(stdout, "{}", termion::cursor::Goto::default())?;
-
-        writeln!(stdout, "BRANCHES\r")?;
-        writeln!(stdout, "\r")?;
-        for (index, branch) in branches.iter().enumerate() {
-            let prefix = if selected == index { "-> " } else { "   " };
-
-            write!(stdout, "{prefix}{}", branch.name)?;
-
-            let padding_len = max_branch_name_len - branch.name.len();
-            for _ in 0..padding_len {
-                write!(stdout, "     {}", branch.status)?;
-            }
-
-            write!(stdout, "{}\n\r", termion::clear::AfterCursor)?;
-        }
-
         let selected_branch = branches.get_mut(selected).unwrap();
         let branch_name = selected_branch.name.clone();
 
+        write!(stdout, "{}", termion::cursor::Goto::default())?;
+        print_branches(stdout, branches, selected, max_branch_name_len)?;
         print_help(&mut stdout, max_branch_name_len, &branch_name)?;
         stdout.flush().unwrap();
 
@@ -83,6 +68,30 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             _ => {}
         }
+    }
+
+    Ok(())
+}
+
+fn print_branches<'a>(
+    mut stdout: impl std::io::Write,
+    branches: impl Iterator<Item = &'a Branch>,
+    selected: usize,
+    max_branch_name_len: usize,
+) -> std::io::Result<()> {
+    writeln!(stdout, "BRANCHES\r")?;
+    writeln!(stdout, "\r")?;
+    for (index, branch) in branches.enumerate() {
+        let prefix = if selected == index { "-> " } else { "   " };
+
+        write!(stdout, "{prefix}{}", branch.name)?;
+
+        let padding_len = max_branch_name_len - branch.name.len();
+        for _ in 0..padding_len {
+            write!(stdout, "     {}", branch.status)?;
+        }
+
+        write!(stdout, "{}\n\r", termion::clear::AfterCursor)?;
     }
 
     Ok(())
