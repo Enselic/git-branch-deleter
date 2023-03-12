@@ -16,6 +16,15 @@ struct BranchInfo {
     status: Option<String>,
 }
 
+enum Action {
+    Delete,
+    ForceDelete,
+    Quit,
+    MoveDown,
+    MoveUp,
+    None,
+}
+
 impl BranchInfo {
     fn parse(line: impl AsRef<str>) -> Self {
         let status = line
@@ -85,22 +94,22 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         stdout.flush().unwrap();
 
-        match keys.next().unwrap()? {
-            Key::Esc | Key::Char('q') | Key::Ctrl('c') => break,
-            Key::Up => {
+        match key_to_action(keys.next().unwrap()?) {
+            Action::Quit => break,
+            Action::MoveUp => {
                 if selected > 0 {
                     selected -= 1;
                 }
             }
-            Key::Down => {
+            Action::MoveDown => {
                 if selected < branches.len() - 1 {
                     selected += 1;
                 }
             }
-            Key::Delete | Key::Char('d') => {
+            Action::Delete => {
                 delete_request = Some("-d");
             }
-            Key::Char('D') => {
+            Action::ForceDelete => {
                 delete_request = Some("-D");
             }
             _ => {}
@@ -141,4 +150,15 @@ fn delete_branch(branch: &str, delete_arg: &str) -> String {
     }
     .into();
     result.replace("\n", " ")
+}
+
+fn key_to_action(key: Key) -> Action {
+    match key {
+        Key::Esc | Key::Char('q') | Key::Ctrl('c') => Action::Quit,
+        Key::Up => Action::MoveUp,
+        Key::Down => Action::MoveDown,
+        Key::Delete | Key::Char('d') => Action::Delete,
+        Key::Char('D') => Action::ForceDelete,
+        _ => Action::None,
+    }
 }
