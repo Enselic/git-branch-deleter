@@ -1,2 +1,5 @@
 # git-branch-deleter
-Small Rust termion based CLI for deleting local git branches.
+
+Delete local git branch comfortably with a minimalistic TUI.
+
+TODO: Add a nice GIF that shows the tool
