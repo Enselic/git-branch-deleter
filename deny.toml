@@ -1,0 +1,12 @@
+[licenses]
+allow = [
+    "MIT",
+]
+
+unlicensed = "deny"
+copyleft = "deny"
+default = "deny"
+
+[bans]
+wildcards = "deny"
+multiple-versions = "allow"
