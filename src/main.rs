@@ -6,9 +6,9 @@ use std::{
 
 use std::io::Write;
 
-use termion::event::Key;
-use termion::input::TermRead;
 use termion::raw::IntoRawMode;
+use termion::{clear, input::TermRead};
+use termion::{cursor, event::Key};
 
 /// Info about a git branch
 #[derive(Debug)]
@@ -43,16 +43,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (mut branches, max_branch_name_len) = local_git_branches();
 
     // Clear the screen only once to avoid flicker
-    write!(stdout, "{}", termion::clear::All)?;
+    write!(&mut stdout, "{}", clear::All)?;
 
-    let mut selection = Selection::new(max_branch_name_len);
+    let mut selection = Selection::new(branches.len() - 1);
     loop {
-        let selected_branch = branches.get_mut(selection.index).unwrap();
-        let branch_name = selected_branch.name.clone();
+        write!(&mut stdout, "{}", cursor::Goto::default())?;
 
-        write!(stdout, "{}", termion::cursor::Goto::default())?;
-        print_branches(stdout, branches, selection.index, max_branch_name_len)?;
-        print_help(&mut stdout, max_branch_name_len, &branch_name)?;
+        print_branches(&mut stdout, &branches, selection.index, max_branch_name_len)?;
+
+        let selected_branch = branches.get_mut(selection.index).unwrap();
+        print_help(&mut stdout, max_branch_name_len, selected_branch)?;
+
         stdout.flush().unwrap();
 
         match key_to_action(keys.next().unwrap()?) {
@@ -69,8 +70,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn print_branches<'a>(
-    mut stdout: impl std::io::Write,
-    branches: impl IntoIterator<Item = &'a Branch>,
+    stdout: &mut dyn std::io::Write,
+    branches: &[Branch],
     selected: usize,
     max_branch_name_len: usize,
 ) -> std::io::Result<()> {
@@ -93,18 +94,20 @@ fn print_branches<'a>(
 }
 
 fn print_help(
-    mut stdout: impl std::io::Write,
+    stdout: &mut dyn std::io::Write,
     indentation: usize,
-    branch_name: &str,
+    branch: &mut Branch,
 ) -> std::io::Result<()> {
     let indentation = " ".repeat(indentation as usize);
+    let branch_name = branch.name.as_str();
+
     writeln!(stdout, "\r")?;
     writeln!(stdout, "\r")?;
     writeln!(stdout, "COMMANDS\r")?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "    d{indentation}   git branch -d {branch_name}\r")?;
+    writeln!(stdout, "    d{indentation}   git branch -d {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "    D{indentation}   git branch -D {branch_name}\r")?;
+    writeln!(stdout, "    D{indentation}   git branch -D {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
     writeln!(stdout, "    q{indentation}   Quit app\r")?;
     writeln!(stdout, "\r")?;
