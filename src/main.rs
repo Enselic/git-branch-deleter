@@ -44,11 +44,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut keys = stdin().lock().keys();
     let mut stdout = stdout().lock().into_raw_mode()?;
     let (mut branches, max_branch_name_len) = local_git_branches();
-
     let mut selection = Selection::new(branches.len() - 1);
+
+    // Clear the screen only once to avoid flicker
+    write!(&mut stdout, "{}", clear::All)?;
     loop {
-        // Clear the screen only once to avoid flicker
-        write!(&mut stdout, "{}", clear::All)?;
         write!(&mut stdout, "{}", cursor::Goto::default())?;
 
         print_branches(&mut stdout, &branches, selection.index, max_branch_name_len)?;
