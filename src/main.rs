@@ -57,11 +57,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let stdin = stdin.lock();
 
     let mut branches: Vec<BranchInfo> = get_local_branches();
-    // let longest_branch_name = branches
-    //     .iter()
-    //     .map(|branch| branch.name.len())
-    //     .max()
-    //     .unwrap_or(0);
+    let max_name_len = branches
+        .iter()
+        .map(|branch| branch.name.len())
+        .max()
+        .unwrap_or(0);
     let mut selected = 0;
 
     let mut keys = stdin.keys();
