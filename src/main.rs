@@ -1,6 +1,5 @@
 use std::{
     error::Error,
-    fmt::{Display, Formatter},
     io::{stdin, stdout},
     process::Command,
 };
@@ -39,16 +38,6 @@ impl BranchInfo {
     }
 }
 
-impl Display for BranchInfo {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name)?;
-        if let Some(status) = &self.status {
-            write!(f, " {status}")?;
-        }
-        Ok(())
-    }
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     // Initialize 'em all.
     let stdout = stdout();
@@ -79,7 +68,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
-            writeln!(stdout, "{prefix} {branch}{}\r", termion::clear::AfterCursor)?;
+            write!(stdout, "{prefix} ")?;
+
+            let padding_len = max_name_len - branch.name.len();
+            for _ in 0..padding_len {
+                write!(stdout, " ")?;
+            }
+
+            write!(stdout, "{}", branch.name)?;
+            if let Some(status) = &branch.status {
+                write!(stdout, "    {status}")?;
+            }
+
+            write!(stdout, "{} ", termion::clear::AfterCursor)?;
         }
 
         let branch_name = branches[selected].name.clone();
