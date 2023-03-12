@@ -10,12 +10,17 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
+/// Info about a git branch
 #[derive(Debug, Clone)]
 struct Branch {
+    /// Name of the git branch
     name: String,
+
+    /// The latest stdout or stderr message from `git branch -d/-D {name}`
     status: String,
 }
 
+/// Keyboard input is mapped to one of these actions
 enum Action {
     Delete,
     ForceDelete,
@@ -27,12 +32,14 @@ enum Action {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut keys = stdin().lock().keys();
-    let mut stdout = stdout().lock().into_raw_mode().unwrap();
+    let mut stdout = stdout().lock().into_raw_mode()?;
     let (mut branches, max_branch_name_len) = get_local_branches();
+
+    // Clear the screen once to avoid flicker
+    write!(stdout, "{}", termion::clear::All)?;
 
     let mut selected = 0;
     loop {
-        write!(stdout, "{}", termion::clear::All)?;
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
         writeln!(stdout, "BRANCHES\r")?;
@@ -56,8 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         print_help(&mut stdout, max_branch_name_len, &branch_name)?;
         stdout.flush().unwrap();
 
-        let action = key_to_action(keys.next().unwrap()?);
-        match action {
+        match key_to_action(keys.next().unwrap()?) {
             Action::Quit => break,
             Action::MoveUp => {
                 if selected > 0 {
