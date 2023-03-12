@@ -85,14 +85,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let branch_name = branches[selected].name.clone();
 
+        let mut s = String::new();
+        for _ in 0..max_name_len {
+            s.push(' ');
+        }
         writeln!(stdout, "\r")?;
         writeln!(stdout, "\r")?;
         writeln!(stdout, "COMMANDS\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "    d    git branch -d {branch_name}\r")?;
-        writeln!(stdout, "    D    git branch -D {branch_name}\r")?;
+        writeln!(stdout, "    d{s}   git branch -d {branch_name}\r")?;
+        writeln!(stdout, "    D{s}   git branch -D {branch_name}\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "    q    Quit app\r")?;
+        writeln!(stdout, "    q{s}   Quit app\r")?;
         writeln!(stdout, "\r")?;
 
         stdout.flush().unwrap();
