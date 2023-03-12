@@ -1,8 +1,7 @@
 [package]
 edition = "2021"
 name = "git-branch-deleter"
-version = "0.1.0"
-default-run = "cargo-public-api"
+version = "0.9.0"
 description = "Delete local git branches comfortably via a CLI"
 homepage = "https://github.com/Enselic/git-branch-deleter"
 documentation = "https://docs.rs/git-branch-deleter"
