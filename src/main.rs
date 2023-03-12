@@ -13,17 +13,19 @@ use termion::raw::IntoRawMode;
 
 struct BranchInfo {
     name: String,
-    current: bool,
     status: Option<String>,
 }
 
 impl BranchInfo {
     fn parse(line: impl AsRef<str>) -> Self {
-        let current = line.as_ref().starts_with("*");
+        let status = line
+            .as_ref()
+            .starts_with("*")
+            .then(|| "(current branch)".to_owned());
+
         Self {
             name: line.as_ref().split_at(2).1.to_owned(),
-            current,
-            status: None,
+            status,
         }
     }
 }
@@ -33,9 +35,6 @@ impl Display for BranchInfo {
         write!(f, "{}", self.name)?;
         if let Some(status) = &self.status {
             write!(f, " {status}")?;
-        }
-        if self.current {
-            write!(f, " (current branch)")?;
         }
         Ok(())
     }
@@ -61,13 +60,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
-        writeln!(stdout, "Commands:\r")?;
         writeln!(stdout, "\r")?;
         writeln!(stdout, "  q    Quits\r")?;
+        writeln!(stdout, "\r")?;
         writeln!(stdout, "  d    git branch -d\r")?;
         writeln!(stdout, "  D    git branch -D\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "Branches:\r")?;
+        writeln!(stdout, "Select branch and action:\r")?;
         writeln!(stdout, "\r")?;
 
         for (index, branch) in branches.iter().enumerate() {
