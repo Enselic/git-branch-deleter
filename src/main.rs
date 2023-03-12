@@ -64,14 +64,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             Action::Delete => selected_branch.delete("-d"),
             Action::ForceDelete => selected_branch.delete("-D"),
             Action::Quit => break,
-            _ => {}
+            Action::None => {}
         }
     }
 
     Ok(())
 }
 
-fn print_branches<'a>(
+fn print_branches(
     stdout: &mut dyn std::io::Write,
     branches: &[Branch],
     selected: usize,
@@ -79,7 +79,7 @@ fn print_branches<'a>(
 ) -> std::io::Result<()> {
     writeln!(stdout, "BRANCHES\r")?;
     writeln!(stdout, "\r")?;
-    for (index, branch) in branches.into_iter().enumerate() {
+    for (index, branch) in branches.iter().enumerate() {
         writeln!(
             stdout,
             "{}{}{}{MARGIN}{}{}\r",
