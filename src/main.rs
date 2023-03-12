@@ -67,13 +67,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut keys = stdin.keys();
 
     // Only clear the screen once to avoid flicker
-    write!(stdout, "{}", termion::clear::All,)?;
+    write!(stdout, "{}", termion::clear::All)?;
 
     loop {
         let mut delete_request = None;
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
+        writeln!(stdout, "BRANCHES\r")?;
         writeln!(stdout, "\r")?;
 
         for (index, branch) in branches.iter().enumerate() {
@@ -87,10 +88,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         writeln!(stdout, "\r")?;
         writeln!(stdout, "COMMANDS\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "  d    git branch -d {branch_name}\r")?;
-        writeln!(stdout, "  D    git branch -D {branch_name}\r")?;
+        writeln!(stdout, "    d    git branch -d {branch_name}\r")?;
+        writeln!(stdout, "    D    git branch -D {branch_name}\r")?;
         writeln!(stdout, "\r")?;
-        writeln!(stdout, "  q    Quit app\r")?;
+        writeln!(stdout, "    q    Quit app\r")?;
         writeln!(stdout, "\r")?;
 
         stdout.flush().unwrap();
