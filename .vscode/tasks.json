@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "./scripts/run-ci-locally.sh",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "./scripts/run-ci-locally.sh"
+		}
+	]
+}
