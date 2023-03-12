@@ -1,9 +1,15 @@
 [package]
+edition = "2021"
 name = "git-branch-deleter"
 version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+default-run = "cargo-public-api"
+description = "Delete local git branches comfortably via a CLI"
+homepage = "https://github.com/Enselic/git-branch-deleter"
+documentation = "https://docs.rs/git-branch-deleter"
+readme = "README.md"
+categories = ["command-line-utilities", "development-tools", "version-control"]
+license = "MIT"
+repository = "https://github.com/Enselic/cargo-public-api"
 
 [dependencies]
 termion = "2.0.1"
