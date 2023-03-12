@@ -10,9 +10,9 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-struct BranchInfo {
+struct Branch {
     name: String,
-    status: Option<String>,
+    status: String,
 }
 
 enum Action {
@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut stdout = stdout().lock().into_raw_mode().unwrap();
     let mut keys = stdin().lock().keys();
-    let mut branches: Vec<BranchInfo> = get_local_branches();
+    let mut branches: Vec<Branch> = get_local_branches();
 
     let max_name_len = branches
         .iter()
@@ -46,6 +46,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         writeln!(stdout, "BRANCHES\r")?;
         writeln!(stdout, "\r")?;
 
+        let selected_branch = branches.get_mut(selected).unwrap();
+
         for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
             write!(stdout, "{prefix} ")?;
@@ -54,17 +56,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let padding_len = max_name_len - branch.name.len();
             for _ in 0..padding_len {
-                write!(stdout, " ")?;
-            }
-
-            if let Some(status) = &branch.status {
-                write!(stdout, "    {status}")?;
+                write!(stdout, "     {}", selected_branch.status)?;
             }
 
             write!(stdout, "{}\n\r", termion::clear::AfterCursor)?;
         }
 
-        let branch_name = branches[selected].name.clone();
+        let branch_name = selected_branch.name.clone();
 
         let mut s = String::new();
         for _ in 0..max_name_len {
@@ -82,7 +80,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         stdout.flush().unwrap();
 
-        match key_to_action(keys.next().unwrap()?) {
+        let action = key_to_action(keys.next().unwrap()?);
+        match action {
             Action::Quit => break,
             Action::MoveUp => {
                 if selected > 0 {
@@ -95,38 +94,49 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             Action::Delete => {
-                delete_request = Some("-d");
+                selected_branch.delete("-d");
             }
             Action::ForceDelete => {
-                delete_request = Some("-D");
+                selected_branch.delete("-D");
             }
             _ => {}
-        }
-
-        if let Some(delete_request) = delete_request {
-            branches.get_mut(selected).unwrap().status =
-                Some(delete_branch(&branch_name, delete_request));
         }
     }
 
     Ok(())
 }
 
-impl BranchInfo {
-    fn parse(line: impl AsRef<str>) -> Self {
+impl Branch {
+    fn from_line(line: impl AsRef<str>) -> Self {
         let status = line
             .as_ref()
             .starts_with("*")
-            .then(|| "(current branch)".to_owned());
+            .then(|| "(current branch)".to_owned())
+            .unwrap_or_default();
 
         Self {
             name: line.as_ref().split_at(2).1.to_owned(),
             status,
         }
     }
+
+    fn delete_branch(&mut self, delete_arg: &str) {
+        let output = Command::new("git")
+            .arg("branch")
+            .arg(delete_arg)
+            .arg(self.name.as_str())
+            .output()
+            .unwrap();
+        self.status = String::from_utf8_lossy(if output.status.success() {
+            &output.stdout
+        } else {
+            &output.stderr
+        })
+        .into();
+    }
 }
 
-fn get_local_branches() -> Vec<BranchInfo> {
+fn get_local_branches() -> Vec<Branch> {
     let stdout = Command::new("git")
         .args(["branch", "--list", "--color=never"])
         .env("GIT_CONFIG_NOSYSTEM", "1")
@@ -144,23 +154,7 @@ fn get_local_branches() -> Vec<BranchInfo> {
 
     let stdout: String = String::from_utf8_lossy(&stdout).into_owned();
 
-    stdout.lines().map(BranchInfo::parse).collect()
-}
-
-fn delete_branch(branch: &str, delete_arg: &str) -> String {
-    let output = Command::new("git")
-        .arg("branch")
-        .arg(delete_arg)
-        .arg(branch.trim())
-        .output()
-        .unwrap();
-    let result: String = if output.status.success() {
-        String::from_utf8_lossy(&output.stdout)
-    } else {
-        String::from_utf8_lossy(&output.stderr)
-    }
-    .into();
-    result.replace("\n", " ")
+    stdout.lines().map(Branch::from_line).collect()
 }
 
 fn key_to_action(key: Key) -> Action {
