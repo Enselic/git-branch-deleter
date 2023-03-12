@@ -64,6 +64,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             writeln!(stdout, "{prefix} {branch}{}\r", termion::clear::AfterCursor)?;
         }
 
+        writeln!(stdout, "Commands that affect the selected branch:\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  'd' performs 'git branch -d\r")?;
+        writeln!(stdout, "  'D' performs 'git branch -D\r")?;
+        writeln!(stdout, "\r")?;
+
+        writeln!(stdout, "Global commands:\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  'q' quits\r")?;
+        writeln!(stdout, "\r")?;
+
+        stdout.flush().unwrap();
+
         match keys.next().unwrap()? {
             Key::Esc | Key::Char('q') | Key::Ctrl('c') => break,
             Key::Up => {
@@ -82,28 +95,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             Key::Char('D') => {
                 delete_request = Some("-D");
             }
-            c => {
-                write!(stdout, "{:?}", c)?;
-            }
+            _ => {}
         }
 
         if let Some(delete_request) = delete_request {
             let branch = &mut branches[selected];
             branch.status = Some(delete_branch(&branch.name, delete_request));
         }
-
-        writeln!(stdout, "Commands that affect the selected branch:\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "  'd' performs 'git branch -d\r")?;
-        writeln!(stdout, "  'D' performs 'git branch -D\r")?;
-        writeln!(stdout, "\r")?;
-
-        writeln!(stdout, "Global commands:\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "  'q' quits\r")?;
-        writeln!(stdout, "\r")?;
-
-        stdout.flush().unwrap();
     }
 
     Ok(())
