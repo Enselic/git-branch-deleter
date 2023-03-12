@@ -42,11 +42,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout().lock().into_raw_mode()?;
     let (mut branches, max_branch_name_len) = local_git_branches();
 
-    // Clear the screen only once to avoid flicker
-    write!(&mut stdout, "{}", clear::All)?;
-
     let mut selection = Selection::new(branches.len() - 1);
     loop {
+        // Clear the screen only once to avoid flicker
+        write!(&mut stdout, "{}", clear::All)?;
         write!(&mut stdout, "{}", cursor::Goto::default())?;
 
         print_branches(&mut stdout, &branches, selection.index, max_branch_name_len)?;
@@ -109,7 +108,7 @@ fn print_help(
     writeln!(stdout, "\r")?;
     writeln!(stdout, "    D{indentation}   git branch -D {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "    q{indentation}   Quit app\r")?;
+    writeln!(stdout, "    q{indentation}   quit\r")?;
     writeln!(stdout, "\r")?;
 
     Ok(())
