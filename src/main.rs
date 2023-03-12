@@ -10,57 +10,23 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-struct BranchInfo {
-    name: String,
-    status: Option<String>,
-}
-
-enum Action {
-    Delete,
-    ForceDelete,
-    Quit,
-    MoveDown,
-    MoveUp,
-    None,
-}
-
-impl BranchInfo {
-    fn parse(line: impl AsRef<str>) -> Self {
-        let status = line
-            .as_ref()
-            .starts_with("*")
-            .then(|| "(current branch)".to_owned());
-
-        Self {
-            name: line.as_ref().split_at(2).1.to_owned(),
-            status,
-        }
-    }
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
-    // Initialize 'em all.
-    let stdout = stdout();
-    let mut stdout = stdout.lock().into_raw_mode().unwrap();
-    let stdin = stdin();
-    let stdin = stdin.lock();
+    let mut selected = 0;
 
+    let mut stdout = stdout().lock().into_raw_mode().unwrap();
+    let mut keys = stdin().lock().keys();
     let mut branches: Vec<BranchInfo> = get_local_branches();
+
     let max_name_len = branches
         .iter()
         .map(|branch| branch.name.len())
         .max()
         .unwrap_or(0);
-    let mut selected = 0;
-
-    let mut keys = stdin.keys();
 
     // Only clear the screen once to avoid flicker
     write!(stdout, "{}{}", termion::clear::All, termion::cursor::Hide)?;
 
     loop {
-        let mut delete_request = None;
-
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
         writeln!(stdout, "BRANCHES\r")?;
@@ -130,6 +96,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+struct BranchInfo {
+    name: String,
+    status: Option<String>,
+}
+
+enum Action {
+    Delete,
+    ForceDelete,
+    Quit,
+    MoveDown,
+    MoveUp,
+    None,
+}
+
+impl BranchInfo {
+    fn parse(line: impl AsRef<str>) -> Self {
+        let status = line
+            .as_ref()
+            .starts_with("*")
+            .then(|| "(current branch)".to_owned());
+
+        Self {
+            name: line.as_ref().split_at(2).1.to_owned(),
+            status,
+        }
+    }
 }
 
 fn get_local_branches() -> Vec<BranchInfo> {
