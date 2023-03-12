@@ -164,8 +164,8 @@ fn delete_branch(branch: &str, delete_arg: &str) -> String {
 fn key_to_action(key: Key) -> Action {
     match key {
         Key::Esc | Key::Char('q') | Key::Ctrl('c') => Action::Quit,
-        Key::Up => Action::MoveUp,
-        Key::Down => Action::MoveDown,
+        Key::Up | Key::Ctrl('p') | Key::Char('k') => Action::MoveUp,
+        Key::Down | Key::Ctrl('n') | Key::Char('j') => Action::MoveDown,
         Key::Delete | Key::Char('d') => Action::Delete,
         Key::Char('D') => Action::ForceDelete,
         _ => Action::None,
