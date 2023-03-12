@@ -1,10 +1,11 @@
 use std::{
     error::Error,
+    fmt::{Display, Formatter},
     io::{stdin, stdout},
     process::Command,
 };
 
-use std::io::{Read, Write};
+use std::io::Write;
 
 use termion::event::Key;
 use termion::input::TermRead;
@@ -13,8 +14,7 @@ use termion::raw::IntoRawMode;
 struct BranchInfo {
     name: String,
     current: bool,
-    status: &'static str,
-    error: Option<String>,
+    status: Option<String>,
 }
 
 impl BranchInfo {
@@ -23,9 +23,21 @@ impl BranchInfo {
         Self {
             name: line.as_ref().split_at(2).1.to_owned(),
             current,
-            status: "",
-            error: None,
+            status: None,
         }
+    }
+}
+
+impl Display for BranchInfo {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.current {
+            write!(f, "* ")?
+        }
+        write!(f, "{}", self.name)?;
+        if let Some(status) = &self.status {
+            write!(f, " {status}")?;
+        }
+        Ok(())
     }
 }
 
@@ -36,7 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let stdin = stdin();
     let stdin = stdin.lock();
 
-    let branches: Vec<BranchInfo> = branches();
+    let mut branches: Vec<BranchInfo> = branches();
     let mut selected = 0;
 
     let mut keys = stdin.keys();
@@ -68,25 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             Key::Delete => {
                 let branch = &mut branches[selected];
-                match delete_branch(&branch.name) {
-                    Ok(_) => {
-                        branch.branches.remove(selected);
-                        if selected > 0 {
-                            selected -= 1;
-                        }
-                    }
-                    Err(e) => {
-                        writeln!(stdout, "Error: {}", e)?;
-                    }
-                }
-                let stdout = Command::new("git")
-                    .args(["branch", "-D"])
-                    .arg(branch.trim())
-                    .spawn()
-                    .unwrap()
-                    .wait();
-                //let stdout: String = String::from_utf8_lossy(&stdout).into_owned();
-                //writeln!(stdout, "{}", stdout)?;
+                branch.status = Some(delete_branch(&branch.name));
             }
             c => {
                 write!(stdout, "{:?}", c)?;
@@ -111,15 +105,17 @@ fn branches() -> Vec<BranchInfo> {
     stdout.lines().map(BranchInfo::parse).collect()
 }
 
-fn delete_branch(branch: &str) -> Result<(), String> {
+fn delete_branch(branch: &str) -> String {
     let output = Command::new("git")
         .args(["branch", "-D"])
         .arg(branch.trim())
         .output()
         .unwrap();
-    if output.status.success() {
-        Ok(())
+    let result: String = if output.status.success() {
+        String::from_utf8_lossy(&output.stdout)
     } else {
-        Err(String::from_utf8_lossy(&output.stderr).into())
+        String::from_utf8_lossy(&output.stderr)
     }
+    .into();
+    result.replace("\n", " ")
 }
