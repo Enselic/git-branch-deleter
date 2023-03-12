@@ -77,16 +77,15 @@ fn print_branches<'a>(
     writeln!(stdout, "BRANCHES\r")?;
     writeln!(stdout, "\r")?;
     for (index, branch) in branches.into_iter().enumerate() {
-        let prefix = if selected == index { "-> " } else { "   " };
-
-        write!(stdout, "{prefix}{}", branch.name)?;
-
-        let padding_len = max_branch_name_len - branch.name.len();
-        for _ in 0..padding_len {
-            write!(stdout, "     {}", branch.status)?;
-        }
-
-        write!(stdout, "{}\n\r", termion::clear::AfterCursor)?;
+        writeln!(
+            stdout,
+            "{}{}{}{}{}\r",
+            if selected == index { "-> " } else { "   " },
+            branch.name,
+            " ".repeat(max_branch_name_len - branch.name.len()),
+            branch.status,
+            clear::AfterCursor
+        )?;
     }
 
     Ok(())
