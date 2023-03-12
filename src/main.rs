@@ -76,10 +76,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     selected += 1;
                 }
             }
-            Key::Delete | Key::Ctrl('d') => {
+            Key::Delete | Key::Char('d') => {
                 delete_request = Some("-d");
             }
-            Key::Ctrl('D') => {
+            Key::Char('D') => {
                 delete_request = Some("-D");
             }
             c => {
@@ -92,16 +92,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             branch.status = Some(delete_branch(&branch.name, delete_request));
         }
 
-        write!(stdout, "Commands that affect the selected branch:\r")?;
-        write!(stdout, "\r")?;
-        write!(stdout, "  'd' performs 'git branch -d\r")?;
-        write!(stdout, "  'D' performs 'git branch -D\r")?;
-        write!(stdout, "\r")?;
+        writeln!(stdout, "Commands that affect the selected branch:\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  'd' performs 'git branch -d\r")?;
+        writeln!(stdout, "  'D' performs 'git branch -D\r")?;
+        writeln!(stdout, "\r")?;
 
-        write!(stdout, "Global commands:\r")?;
-        write!(stdout, "\r")?;
-        write!(stdout, "  'q' quits\r")?;
-        write!(stdout, "\r")?;
+        writeln!(stdout, "Global commands:\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  'q' quits\r")?;
+        writeln!(stdout, "\r")?;
 
         stdout.flush().unwrap();
     }
