@@ -48,6 +48,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let stdin = stdin.lock();
 
     let mut branches: Vec<BranchInfo> = branches();
+    // let longest_branch_name = branches
+    //     .iter()
+    //     .map(|branch| branch.name.len())
+    //     .max()
+    //     .unwrap_or(0);
     let mut selected = 0;
 
     let mut keys = stdin.keys();
@@ -60,19 +65,23 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         write!(stdout, "{}", termion::cursor::Goto::default())?;
 
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "  q    Quits\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "  d    git branch -d\r")?;
-        writeln!(stdout, "  D    git branch -D\r")?;
-        writeln!(stdout, "\r")?;
-        writeln!(stdout, "Select branch and action:\r")?;
-        writeln!(stdout, "\r")?;
-
         for (index, branch) in branches.iter().enumerate() {
             let prefix = if selected == index { "-> " } else { "   " };
             writeln!(stdout, "{prefix} {branch}{}\r", termion::clear::AfterCursor)?;
         }
+
+        let branch_name = branches[selected].name.clone();
+
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "Select branch and action:\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  d    git branch -d {branch_name}\r")?;
+        writeln!(stdout, "  D    git branch -D {branch_name}\r")?;
+        writeln!(stdout, "\r")?;
+        writeln!(stdout, "  q    Quit app\r")?;
+        writeln!(stdout, "\r")?;
 
         stdout.flush().unwrap();
 
@@ -98,8 +107,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         if let Some(delete_request) = delete_request {
-            let branch = &mut branches[selected];
-            branch.status = Some(delete_branch(&branch.name, delete_request));
+            branches.get_mut(selected).unwrap().status =
+                Some(delete_branch(&branch_name, delete_request));
         }
     }
 
