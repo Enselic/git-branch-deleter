@@ -30,9 +30,7 @@ impl BranchInfo {
 
 impl Display for BranchInfo {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        if self.current {
-            write!(f, "* ")?
-        }
+        write!(f, "{}", if self.current { "* " } else { "  " })?;
         write!(f, "{}", self.name)?;
         if let Some(status) = &self.status {
             write!(f, " {status}")?;
@@ -53,6 +51,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut keys = stdin.keys();
     loop {
+        let delete_arg = None;
+
         write!(
             stdout,
             "{}{}",
@@ -78,9 +78,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                     selected += 1;
                 }
             }
-            Key::Delete => {
+            Key::Delete | Key::Ctrl('d') => {
                 let branch = &mut branches[selected];
-                branch.status = Some(delete_branch(&branch.name));
+                branch.status = Some(delete_branch(&branch.name, delete_arg));
+            }
+            Key::Ctrl('D') => {
+                let branch = &mut branches[selected];
+                branch.status = Some(delete_branch(&branch.name, "-D"));
             }
             c => {
                 write!(stdout, "{:?}", c)?;
@@ -105,9 +109,10 @@ fn branches() -> Vec<BranchInfo> {
     stdout.lines().map(BranchInfo::parse).collect()
 }
 
-fn delete_branch(branch: &str) -> String {
+fn delete_branch(branch: &str, delete_arg: &str) -> String {
     let output = Command::new("git")
-        .args(["branch", "-D"])
+        .arg("branch")
+        .arg(delete_arg)
         .arg(branch.trim())
         .output()
         .unwrap();
