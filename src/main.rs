@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut keys = stdin.keys();
     loop {
-        let delete_arg = None;
+        let mut delete_request = None;
 
         write!(
             stdout,
@@ -79,16 +79,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             Key::Delete | Key::Ctrl('d') => {
-                let branch = &mut branches[selected];
-                branch.status = Some(delete_branch(&branch.name, delete_arg));
+                delete_request = Some("-d");
             }
             Key::Ctrl('D') => {
-                let branch = &mut branches[selected];
-                branch.status = Some(delete_branch(&branch.name, "-D"));
+                delete_request = Some("-D");
             }
             c => {
                 write!(stdout, "{:?}", c)?;
             }
+        }
+
+        if let Some(delete_request) = delete_request {
+            let branch = &mut branches[selected];
+            branch.status = Some(delete_branch(&branch.name, delete_request));
         }
 
         stdout.flush().unwrap();
