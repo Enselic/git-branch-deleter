@@ -10,6 +10,20 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
+struct BranchInfo {
+    name: String,
+    status: Option<String>,
+}
+
+enum Action {
+    Delete,
+    ForceDelete,
+    Quit,
+    MoveDown,
+    MoveUp,
+    None,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut selected = 0;
 
@@ -96,20 +110,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-struct BranchInfo {
-    name: String,
-    status: Option<String>,
-}
-
-enum Action {
-    Delete,
-    ForceDelete,
-    Quit,
-    MoveDown,
-    MoveUp,
-    None,
 }
 
 impl BranchInfo {
