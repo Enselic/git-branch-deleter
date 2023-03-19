@@ -23,7 +23,8 @@ jobs:
       - cargo-deny
       - cargo-test
     steps:
-      - run: echo "All jobs completed"
+      - run: |
+          [ "${{ needs.cargo-test.result }}" = "success" ]
 
   cargo-fmt:
     name: cargo fmt -- --check
