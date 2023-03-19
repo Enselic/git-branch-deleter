@@ -2,7 +2,7 @@
 
 Delete local git branches comfortably with a minimalistic TUI.
 
-TODO: Add a nice GIF that shows the tool
+![demo](./docs/imgs/git-branch-deleter.gif)
 
 # Installation
 
