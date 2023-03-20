@@ -12,10 +12,6 @@ env:
 
 jobs:
   all-jobs:
-    # We must use `always()`, because the default `success()` will evaluate to
-    # `skipped` if a needed matrix job fails, and a required status check for a
-    # job is considered OK if it is skipped. And since we use `always()`, we
-    # must check the result of each job manually.
     if: always()
     name: all-jobs
     runs-on: ubuntu-latest
@@ -27,14 +23,7 @@ jobs:
       - cargo-deny
       - cargo-test
     steps:
-      - run: |
-          [ "${{ needs.cargo-fmt.result }}" = "success" ] &&
-          [ "${{ needs.cargo-doc.result }}" = "success" ] &&
-          [ "${{ needs.cargo-clippy.result }}" = "success" ] &&
-          [ "${{ needs.cargo-audit.result }}" = "success" ] &&
-          [ "${{ needs.cargo-deny.result }}" = "success" ] &&
-          [ "${{ needs.cargo-test.result }}" = "success" ] &&
-          echo "All dependent jobs were successful"
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
 
   cargo-fmt:
     name: cargo fmt -- --check
