@@ -118,11 +118,10 @@ fn print_help(
 }
 
 fn local_git_branches() -> (Vec<Branch>, usize) {
+    // Do not set e.g. GIT_CONFIG_NOSYSTEM, because we want the branch order to
+    // match what the user is used to
     let stdout = Command::new("git")
         .args(["branch", "--list", "--color=never"])
-        .env("HOME", "/no-config")
-        .env("XDG_CONFIG_HOME", "/no-config")
-        .env("GIT_CONFIG_NOSYSTEM", "1")
         .output()
         .unwrap()
         .stdout;
