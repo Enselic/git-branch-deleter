@@ -25,6 +25,7 @@ struct Branch {
 enum Action {
     Delete,
     ForceDelete,
+    Checkout,
     Quit,
     MoveDown,
     MoveUp,
@@ -63,6 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Action::MoveDown => selection.move_down(),
             Action::Delete => selected_branch.delete("-d"),
             Action::ForceDelete => selected_branch.delete("-D"),
+            Action::Checkout => selected_branch.checkout(),
             Action::Quit => break,
             Action::None => {}
         }
@@ -111,6 +113,8 @@ fn print_help(
     writeln!(stdout, "\r")?;
     writeln!(stdout, "   D{pad}{MARGIN}git branch -D {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
+    writeln!(stdout, "   c{pad}{MARGIN}git checkout {branch_name}\r",)?;
+    writeln!(stdout, "\r")?;
     writeln!(stdout, "   q{pad}{MARGIN}quit\r")?;
     writeln!(stdout, "\r")?;
 
@@ -146,6 +150,7 @@ fn key_to_action(key: Key) -> Action {
         Key::Esc | Key::Char('q') | Key::Ctrl('c') => Action::Quit,
         Key::Delete | Key::Char('d') => Action::Delete,
         Key::Char('D') => Action::ForceDelete,
+        Key::Char('c') => Action::Checkout,
         _ => Action::None,
     }
 }
@@ -164,20 +169,25 @@ impl Branch {
         }
     }
 
-    fn delete(&mut self, delete_arg: &str) {
-        let output = Command::new("git")
-            .arg("branch")
-            .arg(delete_arg)
-            .arg(self.name.as_str())
-            .output()
-            .unwrap();
-        self.status = String::from_utf8_lossy(if output.status.success() {
-            &output.stdout
-        } else {
-            &output.stderr
-        })
-        .into();
+    fn run_cmd(&mut self, mut cmd: Command) {
+        let output = cmd.output().unwrap();
+        self.status = String::from_utf8_lossy(&output.stderr).to_string()
+            + &String::from_utf8_lossy(&output.stdout);
         self.status = self.status.replace('\n', " ");
+    }
+
+    fn delete(&mut self, delete_arg: &str) {
+        let mut cmd = Command::new("git");
+        cmd.arg("branch").arg(delete_arg).arg(self.name.as_str());
+        self.run_cmd(cmd);
+    }
+
+    fn checkout(&mut self) {
+        let mut cmd = Command::new("git");
+        cmd.arg("checkout")
+            .arg("--progress")
+            .arg(self.name.as_str());
+        self.run_cmd(cmd);
     }
 }
 
