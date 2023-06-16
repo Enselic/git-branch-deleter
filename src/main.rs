@@ -96,12 +96,13 @@ fn print_branches(
     Ok(())
 }
 
+#[rustfmt::skip]
 fn print_help(
     stdout: &mut dyn std::io::Write,
     indentation: usize,
     branch: &mut Branch,
 ) -> std::io::Result<()> {
-    let command_len = 1; // 'd', 'D' or 'q'
+    let command_len = 9; // "c / Enter".len()
     let pad = " ".repeat(indentation - command_len);
     let branch_name = branch.name.as_str();
 
@@ -109,13 +110,13 @@ fn print_help(
     writeln!(stdout, "\r")?;
     writeln!(stdout, "COMMANDS\r")?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "   d{pad}{MARGIN}git branch -d {branch_name}\r",)?;
+    writeln!(stdout, "   d        {pad}{MARGIN}git branch -d {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "   D{pad}{MARGIN}git branch -D {branch_name}\r",)?;
+    writeln!(stdout, "   D        {pad}{MARGIN}git branch -D {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "   c{pad}{MARGIN}git checkout {branch_name}\r",)?;
+    writeln!(stdout, "   c / Enter{pad}{MARGIN}git checkout {branch_name}\r",)?;
     writeln!(stdout, "\r")?;
-    writeln!(stdout, "   q{pad}{MARGIN}quit\r")?;
+    writeln!(stdout, "   q / Esc  {pad}{MARGIN}quit\r")?;
     writeln!(stdout, "\r")?;
 
     Ok(())
@@ -145,12 +146,12 @@ fn local_git_branches() -> (Vec<Branch>, usize) {
 
 fn key_to_action(key: Key) -> Action {
     match key {
-        Key::Down | Key::Ctrl('n') | Key::Char('j') => Action::MoveDown,
-        Key::Up | Key::Ctrl('p') | Key::Char('k') => Action::MoveUp,
+        Key::Down | Key::Right | Key::Ctrl('n') | Key::Char('j') => Action::MoveDown,
+        Key::Up | Key::Left | Key::Ctrl('p') | Key::Char('k') => Action::MoveUp,
         Key::Esc | Key::Char('q') | Key::Ctrl('c') => Action::Quit,
         Key::Delete | Key::Char('d') => Action::Delete,
         Key::Char('D') => Action::ForceDelete,
-        Key::Char('c') => Action::Checkout,
+        Key::Char('c' | '\n') => Action::Checkout,
         _ => Action::None,
     }
 }
