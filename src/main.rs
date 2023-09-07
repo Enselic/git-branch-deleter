@@ -64,7 +64,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             Action::MoveDown => selection.move_down(),
             Action::Delete => selected_branch.delete("-d"),
             Action::ForceDelete => selected_branch.delete("-D"),
-            Action::Checkout => selected_branch.checkout(),
+            Action::Checkout => {
+                write!(&mut stdout, "{}", clear::All)?;
+                write!(&mut stdout, "{}", cursor::Goto::default())?;
+                stdout.flush()?;
+                drop(stdout); // Drop stdout to release raw terminal mode
+                selected_branch.checkout()?;
+                std::io::stdout().lock().flush()?;
+                break; // Auto-quit
+            }
             Action::Quit => break,
             Action::None => {}
         }
@@ -183,12 +191,15 @@ impl Branch {
         self.run_cmd(cmd);
     }
 
-    fn checkout(&mut self) {
+    fn checkout(&mut self) -> std::io::Result<()> {
         let mut cmd = Command::new("git");
         cmd.arg("checkout")
             .arg("--progress")
             .arg(self.name.as_str());
-        self.run_cmd(cmd);
+
+        // Run cmd which will make it print its output
+        cmd.spawn()?.wait()?;
+        Ok(())
     }
 }
 
