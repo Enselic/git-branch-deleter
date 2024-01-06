@@ -18,6 +18,9 @@ jobs:
     environment:
       name: crates.io
       url: https://crates.io/crates/git-branch-deleter
+    outputs:
+      name: ${{ steps.step1.outputs.test }}
+      PUBLISHED_VERSION: ${{ steps.version.outputs.VERSION }}
     steps:
       - uses: actions/checkout@v3
       - run: cargo publish -p git-branch-deleter
@@ -35,12 +38,15 @@ jobs:
   # Create a tag for the published release.
   tag:
     needs: publish
-    environment:
-      name: crates.io
-      url: https://crates.io/crates/git-branch-deleter
     runs-on: ubuntu-latest
     permissions:
       contents: write # So we can push the git tag.
+    environment:
+      name: crates.io
+      url: https://crates.io/crates/git-branch-deleter
+    outputs:
+      name: ${{ steps.step1.outputs.test }}
+      version: ${{ steps.step2.outputs.test }}
     steps:
       - uses: actions/checkout@v3
 
@@ -64,6 +70,5 @@ jobs:
           git tag ${{ steps.version.outputs.GIT_TAG }}
           git push origin ${{ steps.version.outputs.GIT_TAG }}
 
-and create a corresponding git tag
       # Do not create a GitHub release. That is only done for public-api and
       # cargo-public-api. A git tag is sufficient for git-branch-deleter.
