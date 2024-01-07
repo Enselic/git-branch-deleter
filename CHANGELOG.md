@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.9
+
+### Other
+
+- Fix release workflow
+
 ## 0.1.8
 
 ### Improvements

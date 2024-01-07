@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "git-branch-deleter"
-version = "0.1.8"
+version = "0.1.9"
 description = "Delete local git branches comfortably with a minimalistic TUI"
 homepage = "https://github.com/git-branch-deleter/git-branch-deleter"
 documentation = "https://docs.rs/git-branch-deleter"
