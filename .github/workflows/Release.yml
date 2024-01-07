@@ -1,43 +1,55 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # This workflow can only be triggered manually.
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Make sure regular CI passes before we make a release.
   ci:
     uses: ./.github/workflows/CI.yml
 
-  release:
+  # After regular CI passes we publish to crates.io and push a git tag.
+  publish-and-tag:
     needs: ci
+    runs-on: ubuntu-latest
     environment:
       name: crates.io
       url: https://crates.io/crates/git-branch-deleter
     permissions:
-      contents: write # git push
-    runs-on: ubuntu-latest
+      contents: write # So we can push a tag.
+    outputs:
+      VERSION: ${{ steps.version.outputs.VERSION }}
+      TAG_NAME: ${{ steps.version.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v3
-
-      # Figure out what tag to use
-      - name: calculate version
+      - run: cargo publish -p git-branch-deleter
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: version
         id: version
         run: |
           version=$(cargo read-manifest --manifest-path Cargo.toml | jq --raw-output .version)
           echo "VERSION=${version}" >> $GITHUB_OUTPUT
-          echo "GIT_TAG=v${version}" >> $GITHUB_OUTPUT
-
-      # Try to cargo publish git-branch-deleter. If this succeeds we will tag
-      # the release. This is because we don't want to have a situation where a
-      # version exists at crates.io but not as a git tag.
-      - run: cargo publish -p git-branch-deleter
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-      # Push the tag to git.
+          echo "TAG_NAME=v${version}" >> $GITHUB_OUTPUT
       - name: push tag
         run: |
-          git tag ${{ steps.version.outputs.GIT_TAG }}
-          git push origin ${{ steps.version.outputs.GIT_TAG }}
+          git tag ${{ steps.version.outputs.TAG_NAME }}
+          git push origin ${{ steps.version.outputs.TAG_NAME }}
+
+  # Lastly, create a GitHub release. Note that the secret crates.io token is
+  # inaccessible to this job. That is good since we run some third party code.
+  release:
+    needs: publish-and-tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # So we can create a release.
+    steps:
+      - run: cargo install parse-changelog@0.6.4 --locked
+      - name: create release
+        run: |
+          notes="$(parse-changelog CHANGELOG.md ${{ needs.publish-and-tag.outputs.VERSION }})"
+          title="${{ needs.publish-and-tag.outputs.TAG_NAME }}"
+          gh release create --title "$title" --notes "$notes" ${{ needs.publish-and-tag.outputs.TAG_NAME }}
