@@ -1,24 +1,24 @@
 # Changelog
 
-## [Version 0.1.8](https://github.com/git-branch-deleter/git-branch-deleter/compare/v0.1.7...v0.1.8) (2024-01-06)
+## 0.1.8
+
+### Improvements
+
+- Bump termion to 3.0
+
+## 0.1.7
 
 ### Improvements
 
 - Begin to create GitHub releases and keep a CHANGELOG.md
 
-## [Version 0.1.7](https://github.com/git-branch-deleter/git-branch-deleter/compare/v0.1.6...v0.1.7) (2024-01-06)
-
-### Improvements
-
-- Automate releases
-
-## [Version 0.1.6](https://github.com/git-branch-deleter/git-branch-deleter/compare/v0.1.5...v0.1.6) (2024-01-06)
+## 0.1.6
 
 ### Improvements
 
 - Auto-quit after checkout branch
 
-## [Version 0.1.5](https://github.com/git-branch-deleter/git-branch-deleter/compare/v0.1.4...v0.1.5) (2024-01-06)
+## 0.1.5
 
 ### Improvements
 
