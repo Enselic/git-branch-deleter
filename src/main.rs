@@ -111,7 +111,7 @@ fn print_help(
     branch: &mut Branch,
 ) -> std::io::Result<()> {
     let command_len = 9; // "c / Enter".len()
-    let pad = " ".repeat(indentation - command_len);
+    let pad = " ".repeat(indentation.saturating_sub(command_len));
     let branch_name = branch.name.as_str();
 
     writeln!(stdout, "\r")?;
