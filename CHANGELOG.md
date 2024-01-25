@@ -1,8 +1,10 @@
 # Changelog
 
-## 0.1.9
+## 0.1.10
 
-### Other
+- Fix integer underflow
+
+## 0.1.9
 
 - Fix release workflow
 
