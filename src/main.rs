@@ -55,7 +55,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         print_branches(&mut stdout, &branches, selection.index, max_branch_name_len)?;
 
         let selected_branch = branches.get_mut(selection.index).unwrap();
-        print_help(&mut stdout, max_branch_name_len, selected_branch)?;
 
         stdout.flush().unwrap();
 
@@ -100,32 +99,6 @@ fn print_branches(
             clear::AfterCursor
         )?;
     }
-
-    Ok(())
-}
-
-#[rustfmt::skip]
-fn print_help(
-    stdout: &mut dyn std::io::Write,
-    indentation: usize,
-    branch: &mut Branch,
-) -> std::io::Result<()> {
-    let command_len = 9; // "c / Enter".len()
-    let pad = " ".repeat(indentation.saturating_sub(command_len));
-    let branch_name = branch.name.as_str();
-
-    writeln!(stdout, "\r")?;
-    writeln!(stdout, "\r")?;
-    writeln!(stdout, "COMMANDS\r")?;
-    writeln!(stdout, "\r")?;
-    writeln!(stdout, "   d        {pad}{MARGIN}git branch -d {branch_name}\r",)?;
-    writeln!(stdout, "\r")?;
-    writeln!(stdout, "   D        {pad}{MARGIN}git branch -D {branch_name}\r",)?;
-    writeln!(stdout, "\r")?;
-    writeln!(stdout, "   c / Enter{pad}{MARGIN}git checkout {branch_name}\r",)?;
-    writeln!(stdout, "\r")?;
-    writeln!(stdout, "   q / Esc  {pad}{MARGIN}quit\r")?;
-    writeln!(stdout, "\r")?;
 
     Ok(())
 }

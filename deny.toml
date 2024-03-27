@@ -1,11 +1,8 @@
 [licenses]
+version = 2
 allow = [
     "MIT",
 ]
-
-unlicensed = "deny"
-copyleft = "deny"
-default = "deny"
 
 [bans]
 wildcards = "deny"
